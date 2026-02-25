@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
+    from app.domain.interfaces.refresh_token_repository import RefreshTokenRepositoryInterface
     from app.domain.interfaces.user_repository import UserRepositoryInterface
 
 
@@ -14,6 +15,9 @@ class UnitOfWork(Protocol):
 
     @property
     def user_repository(self) -> UserRepositoryInterface: ...
+
+    @property
+    def refresh_token_repository(self) -> RefreshTokenRepositoryInterface: ...
 
     async def __aenter__(self) -> UnitOfWork: ...
 

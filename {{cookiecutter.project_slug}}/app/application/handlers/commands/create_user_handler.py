@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 @command_handler(CreateUserCommand)
 async def handle_create_user(command: CreateUserCommand, *, uow: UnitOfWork) -> UserDTO:
     """Handle user creation: validate, persist, return DTO."""
-    user = UserEntity.create(name=command.name, email=command.email)
+    user = UserEntity.create(name=command.name, email=command.email, password_hash="")
     async with uow:
         await uow.user_repository.save(user)
     return UserDTO(id=str(user.id), name=user.name, email=user.email)

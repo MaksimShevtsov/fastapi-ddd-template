@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field
 
 
 class CreateUserRequest(BaseModel):
     """Request schema for creating a user."""
 
-    name: str
-    email: str
+    name: str = Field(min_length=1, max_length=100)
+    email: EmailStr
 
 
 class UserResponse(BaseModel):

@@ -62,3 +62,42 @@ class ValidationError(DomainError):
         details: dict | None = None,
     ) -> None:
         super().__init__(code=code, message=message, details=details, status_code=422)
+
+
+class AuthenticationError(DomainError):
+    """Authentication failure."""
+
+    def __init__(
+        self,
+        *,
+        code: str = "AUTHENTICATION_ERROR",
+        message: str = "Authentication failed",
+        details: dict | None = None,
+    ) -> None:
+        super().__init__(code=code, message=message, details=details, status_code=401)
+
+
+class AuthorizationError(DomainError):
+    """Authorization / permission failure."""
+
+    def __init__(
+        self,
+        *,
+        code: str = "AUTHORIZATION_ERROR",
+        message: str = "Permission denied",
+        details: dict | None = None,
+    ) -> None:
+        super().__init__(code=code, message=message, details=details, status_code=403)
+
+
+class RateLimitError(DomainError):
+    """Rate limit exceeded."""
+
+    def __init__(
+        self,
+        *,
+        code: str = "RATE_LIMIT_EXCEEDED",
+        message: str = "Rate limit exceeded",
+        details: dict | None = None,
+    ) -> None:
+        super().__init__(code=code, message=message, details=details, status_code=429)

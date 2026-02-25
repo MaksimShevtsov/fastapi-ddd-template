@@ -12,6 +12,11 @@ class Settings(BaseSettings):
     debug: bool = False
     log_level: str = "INFO"
 
+    jwt_secret_key: str = "change-me-in-production"
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 15
+    refresh_token_expire_days: int = 7
+
     db_driver: str = "{{ cookiecutter.db_driver }}"
     {% if cookiecutter.db_driver == "postgresql" -%}
     db_host: str = "localhost"

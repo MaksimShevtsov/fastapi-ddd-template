@@ -10,6 +10,8 @@ dependencies = [
     "fastapi-request-pipeline>=0.1.0",
     "row-query>=0.1.0",
     "pydantic-settings>=2.0.0",
+    "pyjwt>=2.8.0",
+    "bcrypt>=4.0.0",
     {% if cookiecutter.db_driver == "postgresql" -%}
     "asyncpg>=0.29.0",
     {%- else -%}
