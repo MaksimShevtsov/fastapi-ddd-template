@@ -5,9 +5,11 @@ from __future__ import annotations
 import uuid
 from dataclasses import dataclass
 
+from app.domain.value_objects.base import ValueObject
 
-@dataclass(frozen=True)
-class UserId:
+
+@dataclass(frozen=True, slots=True, repr=False)
+class UserId(ValueObject):
     """Immutable identifier for a User entity."""
 
     value: uuid.UUID
