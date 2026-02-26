@@ -1,0 +1,9 @@
+{
+  "project_name": "My Service",
+  "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '_').replace('-', '_') }}",
+  "project_description": "A DDD + CQRS FastAPI service",
+  "author": "Your Name",
+  "python_version": "3.11",
+  "db_driver": ["postgresql", "sqlite"],
+  "use_docker": [true, false]
+}
