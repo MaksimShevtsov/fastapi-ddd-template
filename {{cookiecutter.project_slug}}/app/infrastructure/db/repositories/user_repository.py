@@ -49,6 +49,7 @@ class UserRepository(UserRepositoryInterface):
                     "email": user.email,
                     "password_hash": user.password_hash,
                     "created_at": user.created_at.isoformat(),
+                    "updated_at": user.updated_at.isoformat() if user.updated_at else None,
                 },
             )
         except Exception as exc:

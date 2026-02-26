@@ -31,7 +31,7 @@ async def handle_login_user(
         if user is None or not password_hasher.verify(command.password, user.password_hash):
             raise AuthenticationError(code="INVALID_CREDENTIALS", message="Invalid email or password")
 
-        user_id = str(user.id)
+        user_id = str(user.id_.value)
         access_token = token_service.create_access_token(user_id)
         refresh_token, token_id, expires_at = token_service.create_refresh_token(user_id)
 
