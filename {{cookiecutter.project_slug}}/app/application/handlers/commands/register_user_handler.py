@@ -36,7 +36,7 @@ async def handle_register_user(
         user = UserEntity.create(name=command.name, email=command.email, password_hash=password_hash)
         await uow.user_repository.save(user)
 
-        user_id = str(user.id)
+        user_id = str(user.id_.value)
         access_token = token_service.create_access_token(user_id)
         refresh_token, token_id, expires_at = token_service.create_refresh_token(user_id)
 
