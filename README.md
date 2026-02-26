@@ -1,6 +1,6 @@
 # FastAPI DDD + CQRS Template
 
-A production-ready [Cookiecutter](https://github.com/cookiecutter/cookiecutter) template for building **domain-driven**, **CQRS-based** Python microservices with FastAPI.
+A [Cookiecutter](https://github.com/cookiecutter/cookiecutter) template that implements **Domain-Driven Design with pure SQL** in Python, using FastAPI and CQRS.
 
 ```
 cookiecutter gh:your-username/fastapi-ddd-template
@@ -8,20 +8,19 @@ cookiecutter gh:your-username/fastapi-ddd-template
 
 ---
 
-## Why This Template?
+## What This Is
 
-Most FastAPI tutorials dump everything into a single file. Real services need **boundaries**. This template gives you a battle-tested 4-layer DDD architecture with CQRS separation, a request pipeline, and infrastructure that scales from SQLite prototypes to production PostgreSQL clusters.
+This repository captures a specific method for implementing DDD in Python -- one built around **pure SQL** (no ORM), **strict layer separation**, and **CQRS with decorator-based handler registration**. It comes from practical experience building services where ORMs got in the way and domain logic needed clear boundaries.
 
-**What you get out of the box:**
+The core ideas:
 
-- **4-layer DDD architecture** -- Domain, Application, Infrastructure, Interfaces
-- **CQRS with Command/Query buses** -- Clean write/read separation with decorator-based handler registration
-- **Request pipeline** -- Composable middleware stages (auth, permissions, logging, validation)
-- **JWT authentication** -- Access + refresh token flow, password hashing with bcrypt
-- **Standardized error handling** -- Consistent error envelope across all endpoints
-- **Raw SQL via RowQuery** -- No ORM overhead, full SQL control with named query files
-- **Docker-ready** -- Multi-stage Dockerfile, per-environment compose files
-- **Type-safe configuration** -- Pydantic Settings with environment-specific overrides
+- **Domain layer uses stdlib only** -- no framework imports, no Pydantic, no database awareness
+- **Raw SQL via RowQuery** -- full control over every query, no ORM abstraction leaking into your domain
+- **CQRS separation** -- writes go through domain entities and repositories; reads bypass the domain entirely and query the database directly into lightweight read models
+- **Per-route request pipeline** -- composable stages (auth, permissions, logging) attached to individual routes, not global middleware
+- **Standardized error envelope** -- domain errors map to HTTP status codes through a single exception handler hierarchy
+
+The template generates a working FastAPI service with JWT authentication, a User domain example, and all the wiring to demonstrate how the pieces connect.
 
 ---
 

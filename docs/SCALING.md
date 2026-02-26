@@ -1,6 +1,6 @@
 # Scaling Guide
 
-This document describes how the DDD + CQRS architecture scales from a single-process prototype to a distributed system. Each stage builds on the previous one -- you adopt complexity only when you need it.
+This document describes how the architecture in this template can grow -- from a single process to a distributed system. Each stage builds on the previous one. The key point: the pure-SQL + CQRS foundation makes later stages possible without rewriting earlier code.
 
 ---
 

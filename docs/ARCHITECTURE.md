@@ -1,6 +1,6 @@
 # Architecture Guide
 
-This document explains each layer of the DDD + CQRS architecture, why it exists, and how the layers interact.
+This document explains the DDD + CQRS architecture implemented in this template -- a method for building FastAPI services with pure SQL, strict layer boundaries, and no ORM.
 
 ---
 
