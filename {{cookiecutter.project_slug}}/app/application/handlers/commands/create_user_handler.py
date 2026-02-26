@@ -19,4 +19,4 @@ async def handle_create_user(command: CreateUserCommand, *, uow: UnitOfWork) -> 
     user = UserEntity.create(name=command.name, email=command.email, password_hash="")
     async with uow:
         await uow.user_repository.save(user)
-    return UserDTO(id=str(user.id), name=user.name, email=user.email)
+    return UserDTO(id=str(user.id_.value), name=user.name, email=user.email)

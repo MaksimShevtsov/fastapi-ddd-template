@@ -6,8 +6,8 @@ RUN pip install uv
 
 WORKDIR /app
 
-COPY pyproject.toml .
-RUN uv pip install --system -r pyproject.toml
+COPY pyproject.toml.bak .
+RUN uv pip install --system -r pyproject.toml.bak
 
 # Stage 2: Runtime
 FROM python:{{ cookiecutter.python_version }}-slim
