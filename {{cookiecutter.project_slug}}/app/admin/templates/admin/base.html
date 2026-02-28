@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}{{ admin_title }}{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="{{ admin_prefix }}/static/admin/admin.css">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <h2><a href="{{ admin_prefix }}/" style="text-decoration:none;color:inherit;">{{ admin_title }}</a></h2>
+            <nav>
+                <ul>
+                    <li>
+                        <a href="{{ admin_prefix }}/"
+                           {% if active_nav == 'dashboard' %}class="active"{% endif %}>
+                            Dashboard
+                        </a>
+                    </li>
+                    {% for res in admin_resources %}
+                    <li>
+                        <a href="{{ admin_prefix }}/{{ res.name }}/"
+                           {% if active_nav == res.name %}class="active"{% endif %}>
+                            {{ res.display_name }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main content -->
+        <main class="admin-content">
+            <!-- Header -->
+            <header class="admin-header">
+                <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+                <div class="admin-user-info">
+                    {% if admin_user %}
+                    <span>{{ admin_user.username }}</span>
+                    <a href="{{ admin_prefix }}/logout" role="button" class="outline secondary">Logout</a>
+                    {% endif %}
+                </div>
+            </header>
+
+            <!-- Flash messages -->
+            {% if flash %}
+            <div class="flash-message {{ flash.type }}">
+                {{ flash.message }}
+            </div>
+            {% endif %}
+
+            <!-- Page content -->
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Login — {{ admin_title }}{% endblock %}
+
+{% block page_title %}Login{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <h2>{{ admin_title }}</h2>
+    {% if error %}
+    <div class="flash-message error">{{ error }}</div>
+    {% endif %}
+    <form method="post" action="{{ admin_prefix }}/login">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required autofocus>
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+
+        <button type="submit">Sign In</button>
+    </form>
+</div>
+{% endblock %}

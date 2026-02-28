@@ -52,6 +52,18 @@ def create_app() -> FastAPI:
     app.include_router(auth_router, prefix="/api/v1")
     app.include_router(users_router, prefix="/api/v1")
 
+    # Admin panel
+    from app.admin.site import AdminSite
+    from app.admin_resources.auth import FakeAdminAuthProvider
+    from app.admin_resources.users import create_user_resource
+
+    admin = AdminSite(
+        title="{{ cookiecutter.project_name }} Admin",
+        auth_provider=FakeAdminAuthProvider(),
+    )
+    admin.register(create_user_resource())
+    admin.mount(app)
+
     @app.exception_handler(RequestValidationError)
     async def request_validation_error_handler(
         _request: Request, exc: RequestValidationError

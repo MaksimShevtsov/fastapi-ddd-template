@@ -63,6 +63,10 @@ tests/
 ## Active Technologies
 - Python 3.11+ + FastAPI, fastapi-request-pipeline, RowQuery, Pydantic (schemas/config only), uvicorn (001-ddd-cqrs-cookiecutter)
 - PostgreSQL (default), SQLite (local dev) (001-ddd-cqrs-cookiecutter)
+- Python 3.11+ + FastAPI, Jinja2, session-based auth (003-admin-panel)
+- Python 3.11+ + FastAPI, Jinja2, Pico CSS (CDN), itsdangerous (session signing), Starlette SessionMiddleware (003-admin-panel)
+- PostgreSQL (default) / SQLite (dev) via RowQuery — admin panel is storage-agnostic (uses abstract DAO) (003-admin-panel)
 
 ## Recent Changes
 - 001-ddd-cqrs-cookiecutter: Added Python 3.11+ + FastAPI, fastapi-request-pipeline, RowQuery, Pydantic (schemas/config only), uvicorn
+- 003-admin-panel: Added Jinja2 server-side rendered admin panel with CRUD resource management
