@@ -15,6 +15,7 @@ This document explains the DDD + CQRS architecture implemented in this template 
 - [The Dependency Rule](#the-dependency-rule)
 - [CQRS: Why Separate Reads and Writes?](#cqrs-why-separate-reads-and-writes)
 - [Key Design Decisions](#key-design-decisions)
+- [Admin Panel](#admin-panel)
 
 ---
 
@@ -582,3 +583,91 @@ This means you can:
 **Decision:** Use Pydantic for HTTP schemas and configuration, not for domain entities.
 
 **Why:** Domain entities need custom validation logic, factory methods, and mutation rules that don't fit Pydantic's model. Keeping entities as plain Python classes with explicit validation gives full control.
+
+---
+
+## Admin Panel
+
+The admin panel is a **separate module** (`app/admin/`) that lives outside the four DDD layers. It provides a server-rendered CRUD interface for managing domain resources through a browser.
+
+### Why It's Separate
+
+The admin panel doesn't participate in CQRS or the request pipeline. It has its own concerns:
+
+- **Session-based auth** instead of JWT (browser cookies, not API tokens)
+- **Server-rendered HTML** instead of JSON responses
+- **Form-based workflows** instead of command/query dispatch
+- **Direct DAO access** instead of going through the bus
+
+Putting it inside the DDD layers would compromise the clean separation. Instead, the admin module defines its own protocols (`AdminDAO`, `AdminAuthProvider`) and operates independently.
+
+### How It Connects
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  DDD Layers (domain, application, infrastructure, interfaces) │
+│  JSON API • JWT auth • CQRS buses • request pipeline         │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ share the same FastAPI app
+┌──────────────────────────────┴──────────────────────────────┐
+│  Admin Panel (app/admin/)                                    │
+│  HTML • session auth • direct DAO • Jinja2 templates         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+The admin panel mounts onto the same FastAPI application via `AdminSite.mount(app)`. It adds:
+
+1. An `APIRouter` with all admin routes (default prefix: `/admin`)
+2. A static file mount for CSS
+3. Starlette `SessionMiddleware` for cookie-based sessions
+
+### Module Structure
+
+```
+app/admin/
+├── site.py              # AdminSite: registry, router, mount logic
+├── resource.py          # ResourceAdmin, FieldConfig, ColumnConfig (dataclasses)
+├── auth.py              # AdminAuthProvider protocol
+├── dao.py               # AdminDAO protocol (list/get/create/update/delete)
+├── views/
+│   ├── auth.py          # Login / logout routes
+│   ├── dashboard.py     # Dashboard with resource cards
+│   ├── resource_list.py # Paginated list with search
+│   ├── resource_create.py
+│   ├── resource_detail.py
+│   ├── resource_edit.py
+│   └── resource_delete.py
+├── templates/admin/     # Jinja2 templates (base layout, forms, tables)
+└── static/admin/        # Pico CSS overrides
+```
+
+### Key Protocols
+
+**AdminDAO** -- storage-agnostic data access. Returns plain `dict` objects so it works with any backend (RowQuery, SQLAlchemy, in-memory, external API):
+
+```python
+class AdminDAO(Protocol):
+    async def list(self, offset: int, limit: int, search: str | None = None) -> tuple[list[dict], int]: ...
+    async def get(self, id: str) -> dict | None: ...
+    async def create(self, data: dict) -> dict: ...
+    async def update(self, id: str, data: dict) -> dict: ...
+    async def delete(self, id: str) -> None: ...
+```
+
+**AdminAuthProvider** -- pluggable authentication. Implement `authenticate` and `get_user` against your user store:
+
+```python
+class AdminAuthProvider(Protocol):
+    async def authenticate(self, username: str, password: str) -> AdminUser | None: ...
+    async def get_user(self, user_id: str) -> AdminUser | None: ...
+```
+
+### Design Rationale
+
+| Decision | Rationale |
+|----------|-----------|
+| Protocol-based DAO (not ABC) | Duck typing -- no forced inheritance, any class with the right methods works |
+| Plain dicts (not entities) | Admin shouldn't couple to domain entities; it's a generic CRUD tool |
+| Session auth (not JWT) | Browser sessions are the right tool for server-rendered HTML |
+| Pico CSS (not Tailwind/Bootstrap) | Classless, minimal, no build step -- fits a backend-first template |
+| No JavaScript | Server-rendered forms keep the admin simple and dependency-free |
