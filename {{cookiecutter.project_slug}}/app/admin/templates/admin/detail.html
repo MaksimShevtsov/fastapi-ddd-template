@@ -1,0 +1,32 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ resource.display_name }} Detail — {{ admin_title }}{% endblock %}
+
+{% block page_title %}{{ resource.display_name }} — {{ record[resource.id_field] }}{% endblock %}
+
+{% block content %}
+<dl class="detail-fields">
+    {% for field in resource.form_fields %}
+    <div class="detail-field">
+        <dt>{{ field.label }}</dt>
+        <dd>{{ record.get(field.name, '') }}</dd>
+    </div>
+    {% endfor %}
+    {% for col in resource.list_columns %}
+    {% if col.name not in resource.form_fields | map(attribute='name') | list %}
+    <div class="detail-field">
+        <dt>{{ col.label }}</dt>
+        <dd>{{ record.get(col.name, '') }}</dd>
+    </div>
+    {% endif %}
+    {% endfor %}
+</dl>
+
+<div class="admin-actions">
+    <a href="{{ admin_prefix }}/{{ resource.name }}/{{ record[resource.id_field] }}/edit"
+       role="button">Edit</a>
+    <a href="{{ admin_prefix }}/{{ resource.name }}/{{ record[resource.id_field] }}/delete"
+       role="button" class="outline secondary">Delete</a>
+    <a href="{{ admin_prefix }}/{{ resource.name }}/">Back to list</a>
+</div>
+{% endblock %}

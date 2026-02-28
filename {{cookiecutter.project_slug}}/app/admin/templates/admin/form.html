@@ -1,0 +1,87 @@
+{% extends "admin/base.html" %}
+
+{% block title %}
+{% if is_edit %}Edit{% else %}Create{% endif %} {{ resource.display_name }} — {{ admin_title }}
+{% endblock %}
+
+{% block page_title %}
+{% if is_edit %}Edit {{ resource.display_name }}{% else %}Create {{ resource.display_name }}{% endif %}
+{% endblock %}
+
+{% block content %}
+<form method="post"
+      action="{% if is_edit %}{{ admin_prefix }}/{{ resource.name }}/{{ record_id }}/edit{% else %}{{ admin_prefix }}/{{ resource.name }}/create{% endif %}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    {% for field in resource.form_fields %}
+    {% if not field.readonly or not is_edit %}
+
+    <label for="field-{{ field.name }}">
+        {{ field.label }}
+        {% if field.required and field.field_type.value != 'boolean' %}
+        <span aria-label="required">*</span>
+        {% endif %}
+    </label>
+
+    {% if field.field_type.value == 'textarea' %}
+    <textarea id="field-{{ field.name }}" name="{{ field.name }}"
+              {% if field.placeholder %}placeholder="{{ field.placeholder }}"{% endif %}
+              {% if field.required %}required{% endif %}
+              {% if errors.get(field.name) %}aria-invalid="true"{% endif %}
+    >{{ form_data.get(field.name, '') }}</textarea>
+
+    {% elif field.field_type.value == 'select' %}
+    <select id="field-{{ field.name }}" name="{{ field.name }}"
+            {% if field.required %}required{% endif %}
+            {% if errors.get(field.name) %}aria-invalid="true"{% endif %}>
+        <option value="">— Select —</option>
+        {% for val, label in field.choices %}
+        <option value="{{ val }}" {% if form_data.get(field.name) == val %}selected{% endif %}>
+            {{ label }}
+        </option>
+        {% endfor %}
+    </select>
+
+    {% elif field.field_type.value == 'boolean' %}
+    <fieldset>
+        <label>
+            <input type="checkbox" id="field-{{ field.name }}" name="{{ field.name }}"
+                   {% if form_data.get(field.name) %}checked{% endif %}>
+            {{ field.label }}
+        </label>
+    </fieldset>
+
+    {% elif field.field_type.value == 'datetime' %}
+    <input type="datetime-local" id="field-{{ field.name }}" name="{{ field.name }}"
+           value="{{ form_data.get(field.name, '') }}"
+           {% if field.placeholder %}placeholder="{{ field.placeholder }}"{% endif %}
+           {% if field.required %}required{% endif %}
+           {% if errors.get(field.name) %}aria-invalid="true"{% endif %}>
+
+    {% else %}
+    <input type="{{ field.field_type.value }}" id="field-{{ field.name }}" name="{{ field.name }}"
+           value="{{ form_data.get(field.name, '') }}"
+           {% if field.placeholder %}placeholder="{{ field.placeholder }}"{% endif %}
+           {% if field.required %}required{% endif %}
+           {% if errors.get(field.name) %}aria-invalid="true"{% endif %}>
+    {% endif %}
+
+    {% if field.help_text %}
+    <small>{{ field.help_text }}</small>
+    {% endif %}
+
+    {% if errors.get(field.name) %}
+    <small class="field-error">{{ errors[field.name] }}</small>
+    {% endif %}
+
+    {% elif field.readonly and is_edit %}
+    <label>{{ field.label }}</label>
+    <input type="text" value="{{ form_data.get(field.name, '') }}" disabled>
+    {% endif %}
+    {% endfor %}
+
+    <div class="admin-actions">
+        <button type="submit">{% if is_edit %}Save Changes{% else %}Create{% endif %}</button>
+        <a href="{{ admin_prefix }}/{{ resource.name }}/">Cancel</a>
+    </div>
+</form>
+{% endblock %}

@@ -38,10 +38,12 @@ This document describes how the architecture in this template can grow -- from a
 
 **What changes:** Add more workers behind a load balancer. Nothing in the code changes.
 
-**Why it works:** The architecture is stateless by design:
+**Why it works:** The API layer is stateless by design:
 - **JWT tokens** are self-contained -- any instance can validate them
-- **No server-side sessions** -- no sticky sessions needed
+- **No server-side sessions for the API** -- no sticky sessions needed
 - **Database is the single source of truth** -- all instances share it
+
+> **Note on the admin panel:** The admin panel uses cookie-based sessions (signed with `itsdangerous`). By default, session data is stored in the cookie itself (no server-side state), so it also works across multiple instances without sticky sessions. If you move to server-side session storage later, you'll need a shared session store (Redis, database).
 
 **How to do it:**
 

@@ -1,0 +1,245 @@
+/* Admin Panel — Pico CSS overrides */
+
+:root {
+    --admin-sidebar-width: 240px;
+    --admin-header-height: 56px;
+}
+
+/* Layout: sidebar + content */
+.admin-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar */
+.admin-sidebar {
+    width: var(--admin-sidebar-width);
+    min-width: var(--admin-sidebar-width);
+    padding: 1rem;
+    border-right: 1px solid var(--pico-muted-border-color);
+    background: var(--pico-card-background-color);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.admin-sidebar h2 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--pico-muted-border-color);
+}
+
+.admin-sidebar nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.admin-sidebar nav ul li {
+    margin-bottom: 0.25rem;
+}
+
+.admin-sidebar nav ul li a {
+    display: block;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    text-decoration: none;
+    color: var(--pico-color);
+}
+
+.admin-sidebar nav ul li a:hover {
+    background: var(--pico-primary-focus);
+}
+
+.admin-sidebar nav ul li a.active {
+    background: var(--pico-primary-background);
+    color: var(--pico-primary-inverse);
+}
+
+/* Main content area */
+.admin-content {
+    flex: 1;
+    padding: 1.5rem 2rem;
+    min-width: 0;
+}
+
+/* Header bar */
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--pico-muted-border-color);
+}
+
+.admin-header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.admin-header .admin-user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Flash messages */
+.flash-message {
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+.flash-message.success {
+    background: var(--pico-ins-color);
+    color: var(--pico-color);
+    border: 1px solid var(--pico-ins-color);
+}
+
+.flash-message.error {
+    background: var(--pico-del-color);
+    color: var(--pico-color);
+    border: 1px solid var(--pico-del-color);
+}
+
+.flash-message.warning {
+    background: var(--pico-mark-background-color);
+    color: var(--pico-color);
+    border: 1px solid var(--pico-mark-background-color);
+}
+
+/* Dashboard cards */
+.resource-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.resource-card {
+    padding: 1.25rem;
+    border-radius: 8px;
+    border: 1px solid var(--pico-muted-border-color);
+    text-decoration: none;
+    color: var(--pico-color);
+    transition: border-color 0.2s;
+}
+
+.resource-card:hover {
+    border-color: var(--pico-primary);
+}
+
+.resource-card .count {
+    font-size: 2rem;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.resource-card .name {
+    font-size: 0.9rem;
+    color: var(--pico-muted-color);
+}
+
+/* Table tweaks */
+.admin-table {
+    width: 100%;
+}
+
+/* Search and actions bar */
+.admin-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    gap: 1rem;
+}
+
+.admin-toolbar form {
+    margin: 0;
+    flex: 1;
+    max-width: 400px;
+}
+
+.admin-toolbar input[type="search"] {
+    margin: 0;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.pagination a,
+.pagination span {
+    padding: 0.4rem 0.75rem;
+    border-radius: 4px;
+    text-decoration: none;
+}
+
+.pagination .current {
+    background: var(--pico-primary-background);
+    color: var(--pico-primary-inverse);
+}
+
+.pagination .disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Form errors */
+.field-error {
+    color: var(--pico-del-color);
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+/* Detail view */
+.detail-fields {
+    margin-bottom: 1.5rem;
+}
+
+.detail-field {
+    display: flex;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--pico-muted-border-color);
+}
+
+.detail-field dt {
+    font-weight: 600;
+    min-width: 180px;
+    color: var(--pico-muted-color);
+}
+
+.detail-field dd {
+    margin: 0;
+    flex: 1;
+}
+
+/* Action buttons */
+.admin-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+/* Delete confirmation */
+.delete-confirm {
+    max-width: 500px;
+    margin: 2rem auto;
+    text-align: center;
+}
+
+/* Login page */
+.login-container {
+    max-width: 400px;
+    margin: 4rem auto;
+    padding: 2rem;
+}

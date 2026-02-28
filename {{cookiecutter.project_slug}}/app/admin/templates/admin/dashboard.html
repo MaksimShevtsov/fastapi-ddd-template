@@ -1,0 +1,19 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Dashboard — {{ admin_title }}{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<p>Welcome, <strong>{{ admin_user.username }}</strong>.</p>
+
+<h3>Resources</h3>
+<div class="resource-cards">
+    {% for res in resources %}
+    <a href="{{ admin_prefix }}/{{ res.name }}/" class="resource-card">
+        <span class="count">{{ res.count }}</span>
+        <span class="name">{{ res.display_name }}</span>
+    </a>
+    {% endfor %}
+</div>
+{% endblock %}

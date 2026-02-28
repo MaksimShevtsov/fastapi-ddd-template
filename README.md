@@ -19,6 +19,7 @@ The core ideas:
 - **CQRS separation** -- writes go through domain entities and repositories; reads bypass the domain entirely and query the database directly into lightweight read models
 - **Per-route request pipeline** -- composable stages (auth, permissions, logging) attached to individual routes, not global middleware
 - **Standardized error envelope** -- domain errors map to HTTP status codes through a single exception handler hierarchy
+- **Built-in admin panel** -- server-rendered CRUD interface for managing domain resources, with pluggable auth and storage-agnostic DAO
 
 The template generates a working FastAPI service with JWT authentication, a User domain example, and all the wiring to demonstrate how the pieces connect.
 
@@ -151,6 +152,19 @@ app/
 │   │   └── flows.py         # Composable flow definitions
 │   └── dependencies/        # FastAPI Depends() wiring
 │       └── container.py     # DI container
+│
+├── admin/                   # Server-rendered admin panel
+│   ├── site.py              # AdminSite registry + router mounting
+│   ├── resource.py          # ResourceAdmin, FieldConfig, ColumnConfig
+│   ├── auth.py              # AdminAuthProvider protocol
+│   ├── dao.py               # AdminDAO protocol (storage-agnostic)
+│   ├── views/               # Route handlers (login, dashboard, CRUD)
+│   ├── templates/admin/     # Jinja2 templates (Pico CSS)
+│   └── static/admin/        # CSS overrides
+│
+├── admin_resources/         # Your resource + auth implementations
+│   ├── users.py             # Example: UserResourceAdmin + DAO
+│   └── auth.py              # Example: AdminAuthProvider impl
 │
 ├── main.py                  # App factory + exception handlers
 │
@@ -337,6 +351,100 @@ Infrastructure and unhandled errors always return `500` with no internal details
 
 ---
 
+## Admin Panel
+
+The template includes a server-rendered admin panel for managing domain resources through a browser. It lives outside the DDD layers as a standalone module with its own auth, templates, and routing.
+
+### Key Design Decisions
+
+- **Server-rendered** -- Jinja2 templates with Pico CSS. No JavaScript framework, no build step.
+- **Storage-agnostic** -- Uses an `AdminDAO` protocol that returns plain dicts. Works with RowQuery, SQLAlchemy, or any data source.
+- **Session-based auth** -- Separate from JWT API auth. Uses Starlette `SessionMiddleware` with signed cookies.
+- **Configuration-driven** -- Resources are declared as dataclasses (`ResourceAdmin`) with column and field definitions. No code generation or metaclass magic.
+
+### Adding a Resource
+
+**1. Implement the DAO** -- five async methods that work with your storage:
+
+```python
+# app/admin_resources/orders.py
+from app.admin.dao import AdminDAO
+
+class OrderDAO(AdminDAO):
+    async def list(self, offset: int, limit: int, search: str | None = None):
+        # Return (items: list[dict], total_count: int)
+        ...
+
+    async def get(self, id: str) -> dict | None: ...
+    async def create(self, data: dict) -> dict: ...
+    async def update(self, id: str, data: dict) -> dict: ...
+    async def delete(self, id: str) -> None: ...
+```
+
+**2. Define the resource** -- declare which columns to show in the list and which fields appear in forms:
+
+```python
+from app.admin.resource import ResourceAdmin, ColumnConfig, FieldConfig, FieldType
+
+def create_order_resource():
+    return ResourceAdmin(
+        name="orders",
+        display_name="Orders",
+        dao=OrderDAO(),
+        list_columns=[
+            ColumnConfig(name="id", label="ID"),
+            ColumnConfig(name="customer", label="Customer", link_to_detail=True),
+            ColumnConfig(name="total", label="Total"),
+        ],
+        form_fields=[
+            FieldConfig(name="customer", label="Customer", field_type=FieldType.TEXT),
+            FieldConfig(name="total", label="Total", field_type=FieldType.NUMBER),
+            FieldConfig(
+                name="status", label="Status", field_type=FieldType.SELECT,
+                choices=[("pending", "Pending"), ("shipped", "Shipped")],
+            ),
+        ],
+    )
+```
+
+**3. Register and mount** in `main.py`:
+
+```python
+import os
+
+from app.admin.site import AdminSite
+
+# Load session secret from environment — set ADMIN_SESSION_SECRET before deploying
+session_secret = os.environ.get("ADMIN_SESSION_SECRET", "change-me-in-production")
+
+admin = AdminSite(
+    title="My App Admin",
+    auth_provider=MyAuthProvider(),
+    session_secret=session_secret,
+    https_only=os.environ.get("ADMIN_HTTPS_ONLY", "false").lower() == "true",
+)
+admin.register(create_order_resource())
+admin.mount(app)
+```
+
+Navigate to `http://localhost:8000/admin/` to access the panel.
+
+### Field Types
+
+| FieldType | HTML Input | Use For |
+|-----------|-----------|---------|
+| `TEXT` | `<input type="text">` | Names, emails, short strings |
+| `NUMBER` | `<input type="number">` | Integers, decimals |
+| `BOOLEAN` | `<input type="checkbox">` | True/false flags |
+| `DATE` | `<input type="date">` | Date-only values |
+| `DATETIME` | `<input type="datetime-local">` | Date + time values |
+| `SELECT` | `<select>` | Predefined choices (provide `choices`) |
+| `TEXTAREA` | `<textarea>` | Long text, descriptions |
+
+> For a complete integration guide, see **[specs/003-admin-panel/quickstart.md](specs/003-admin-panel/quickstart.md)**.
+
+---
+
 ## Scaling Guide
 
 This architecture is designed to grow with your service. See **[docs/SCALING.md](docs/SCALING.md)** for the full guide. Here's the summary:
@@ -380,6 +488,8 @@ Override per environment (`local`, `dev`, `stage`, `prod`) with environment-spec
 
 ## Built-In Endpoints
 
+### API
+
 | Method | Path | Flow | Description |
 |--------|------|------|-------------|
 | `GET` | `/health` | Public | Health check |
@@ -390,6 +500,19 @@ Override per environment (`local`, `dev`, `stage`, `prod`) with environment-spec
 | `POST` | `/api/v1/auth/change-password` | Authenticated | Change password |
 | `GET` | `/api/v1/users/{id}` | Authenticated | Get user by ID |
 | `POST` | `/api/v1/users` | Authenticated | Create user |
+
+### Admin Panel
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET/POST` | `/admin/login` | Admin login form |
+| `GET` | `/admin/logout` | Clear admin session |
+| `GET` | `/admin/` | Dashboard with resource overview |
+| `GET` | `/admin/{resource}/` | Paginated list with search |
+| `GET/POST` | `/admin/{resource}/create` | Create form |
+| `GET` | `/admin/{resource}/{id}` | Record detail view |
+| `GET/POST` | `/admin/{resource}/{id}/edit` | Edit form |
+| `GET/POST` | `/admin/{resource}/{id}/delete` | Delete confirmation |
 
 ---
 
@@ -418,7 +541,8 @@ pytest          # Run tests
 | Request pipeline | [fastapi-request-pipeline](https://github.com/your-username/fastapi-request-pipeline) |
 | Database | [RowQuery](https://github.com/your-username/row-query) (async, raw SQL) |
 | Config | [Pydantic Settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/) |
-| Auth | [PyJWT](https://pyjwt.readthedocs.io/) + [bcrypt](https://github.com/pyca/bcrypt) |
+| API auth | [PyJWT](https://pyjwt.readthedocs.io/) + [bcrypt](https://github.com/pyca/bcrypt) |
+| Admin panel | [Jinja2](https://jinja.palletsprojects.com/) + [Pico CSS](https://picocss.com/) + Starlette sessions |
 | Lint/Format | [Ruff](https://docs.astral.sh/ruff/) |
 | Tests | [pytest](https://docs.pytest.org/) |
 | Containers | Docker + docker-compose |
