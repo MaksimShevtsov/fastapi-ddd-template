@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from jinja2 import Environment, FileSystemLoader
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.admin.auth import AdminAuthProvider, get_flash
+from app.admin.auth import AdminAuthProvider, get_csrf_token, get_flash
 
 if TYPE_CHECKING:
     from app.admin.resource import ResourceAdmin
@@ -28,6 +28,7 @@ class AdminSite:
         prefix: str = "/admin",
         auth_provider: AdminAuthProvider | None = None,
         session_secret: str = "change-me-in-production",
+        https_only: bool = False,
     ) -> None:
         if not prefix.startswith("/"):
             raise ValueError("prefix must start with '/'")
@@ -36,6 +37,7 @@ class AdminSite:
         self.prefix = prefix
         self.auth_provider = auth_provider
         self.session_secret = session_secret
+        self.https_only = https_only
         self._resources: dict[str, ResourceAdmin] = {}
         self._env = Environment(
             loader=FileSystemLoader(str(_TEMPLATES_DIR)),
@@ -60,12 +62,14 @@ class AdminSite:
         """Render a Jinja2 template with common admin context."""
         template = self._env.get_template(template_name)
         flash = get_flash(request)
+        csrf_token = get_csrf_token(request)
         return template.render(
             admin_title=self.title,
             admin_prefix=self.prefix,
             admin_resources=self.get_resources(),
             admin_user=context.pop("admin_user", None),
             flash=flash,
+            csrf_token=csrf_token,
             request=request,
             **context,
         )
@@ -112,5 +116,5 @@ class AdminSite:
             secret_key=self.session_secret,
             session_cookie="admin_session",
             same_site="lax",
-            https_only=False,
+            https_only=self.https_only,
         )
