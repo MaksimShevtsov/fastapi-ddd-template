@@ -11,6 +11,7 @@
 {% block content %}
 <form method="post"
       action="{% if is_edit %}{{ admin_prefix }}/{{ resource.name }}/{{ record_id }}/edit{% else %}{{ admin_prefix }}/{{ resource.name }}/create{% endif %}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     {% for field in resource.form_fields %}
     {% if not field.readonly or not is_edit %}
 

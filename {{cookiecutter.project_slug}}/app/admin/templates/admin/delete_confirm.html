@@ -18,6 +18,7 @@
     </dl>
 
     <form method="post" action="{{ admin_prefix }}/{{ resource.name }}/{{ record_id }}/delete">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <div class="admin-actions" style="justify-content:center;">
             <button type="submit" class="contrast">Confirm Delete</button>
             <a href="{{ admin_prefix }}/{{ resource.name }}/{{ record_id }}"

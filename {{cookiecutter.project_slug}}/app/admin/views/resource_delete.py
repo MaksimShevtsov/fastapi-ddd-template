@@ -2,16 +2,19 @@
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from starlette.responses import Response
 
-from app.admin.auth import require_admin, set_flash
+from app.admin.auth import require_admin, set_flash, validate_csrf
 
 if TYPE_CHECKING:
     from app.admin.site import AdminSite
+
+logger = logging.getLogger(__name__)
 
 
 def build_delete_routes(router: APIRouter, site: AdminSite) -> None:
@@ -75,14 +78,25 @@ def build_delete_routes(router: APIRouter, site: AdminSite) -> None:
             set_flash(request, "error", "Resource not found.")
             return RedirectResponse(url=f"{site.prefix}/", status_code=303)
 
+        form = await request.form()
+        submitted_token = str(form.get("csrf_token", ""))
+        if not validate_csrf(request, submitted_token):
+            set_flash(request, "error", "Invalid or missing CSRF token.")
+            return RedirectResponse(
+                url=f"{site.prefix}/{resource_name}/{record_id}/delete", status_code=303
+            )
+
         try:
             await resource.dao.delete(record_id)
             set_flash(request, "success", "Record deleted.")
             return RedirectResponse(
                 url=f"{site.prefix}/{resource_name}/", status_code=303
             )
-        except Exception as exc:
-            set_flash(request, "error", f"Error deleting record: {exc}")
+        except Exception:
+            logger.exception(
+                "Error deleting record '%s' for resource '%s'", record_id, resource_name
+            )
+            set_flash(request, "error", "An error occurred while deleting the record.")
             return RedirectResponse(
                 url=f"{site.prefix}/{resource_name}/{record_id}",
                 status_code=303,

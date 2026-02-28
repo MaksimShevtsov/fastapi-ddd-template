@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 7
 
+    admin_enabled: bool = False
+    admin_session_secret: str = "change-me-in-production"
+    admin_https_only: bool = False
+
     db_driver: str = "{{ cookiecutter.db_driver }}"
     {% if cookiecutter.db_driver == "postgresql" -%}
     db_host: str = "localhost"
