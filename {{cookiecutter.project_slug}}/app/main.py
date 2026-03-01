@@ -22,6 +22,7 @@ from app.application.bus.command_bus import DuplicateHandlerError, HandlerNotFou
 from app.domain.errors import DomainError
 from app.infrastructure.config import Settings
 from app.infrastructure.db.connection import create_engine
+from app.infrastructure.db.migrations import run_migrations
 from app.infrastructure.errors import InfrastructureError
 from app.infrastructure.logging import setup_logging
 from app.interfaces.api.routes.auth import router as auth_router
@@ -37,6 +38,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = Settings()
     setup_logging(settings)
     engine = create_engine(settings)
+    await run_migrations("sql/migrations", engine)
     app.state.settings = settings
     app.state.engine = engine
     logger.info("Application started", extra={"service": settings.app_name})
