@@ -12,3 +12,29 @@ services:
     volumes:
       - ../../app:/app/app
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    {% if cookiecutter.db_driver == "postgresql" -%}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    {%- endif %}
+
+  {% if cookiecutter.db_driver == "postgresql" -%}
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: {{ cookiecutter.project_slug }}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata_local:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata_local:
+  {%- endif %}
