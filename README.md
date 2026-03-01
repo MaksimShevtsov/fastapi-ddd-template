@@ -410,9 +410,19 @@ def create_order_resource():
 **3. Register and mount** in `main.py`:
 
 ```python
+import os
+
 from app.admin.site import AdminSite
 
-admin = AdminSite(title="My App Admin", auth_provider=MyAuthProvider())
+# Load session secret from environment — set ADMIN_SESSION_SECRET before deploying
+session_secret = os.environ.get("ADMIN_SESSION_SECRET", "change-me-in-production")
+
+admin = AdminSite(
+    title="My App Admin",
+    auth_provider=MyAuthProvider(),
+    session_secret=session_secret,
+    https_only=os.environ.get("ADMIN_HTTPS_ONLY", "false").lower() == "true",
+)
 admin.register(create_order_resource())
 admin.mount(app)
 ```

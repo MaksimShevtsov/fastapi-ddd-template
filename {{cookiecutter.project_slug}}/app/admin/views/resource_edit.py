@@ -2,17 +2,20 @@
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from starlette.responses import Response
 
-from app.admin.auth import require_admin, set_flash
-from app.admin.views.resource_create import _coerce_form_data, _validate_form
+from app.admin.auth import require_admin, set_flash, validate_csrf
+from app.admin.views.forms import coerce_form_data, validate_form
 
 if TYPE_CHECKING:
     from app.admin.site import AdminSite
+
+logger = logging.getLogger(__name__)
 
 
 def build_edit_routes(router: APIRouter, site: AdminSite) -> None:
@@ -52,7 +55,13 @@ def build_edit_routes(router: APIRouter, site: AdminSite) -> None:
             )
             return HTMLResponse(html, status_code=404)
 
-        form_data = {k: str(v) if v is not None else "" for k, v in record.items()}
+        form_data: dict[str, object] = {}
+        for k, v in record.items():
+            if isinstance(v, bool):
+                # Preserve booleans so Jinja treats False as falsy (e.g., for checkboxes)
+                form_data[k] = v
+            else:
+                form_data[k] = str(v) if v is not None else ""
 
         html = site.render(
             "admin/form.html",
@@ -93,7 +102,13 @@ def build_edit_routes(router: APIRouter, site: AdminSite) -> None:
         form = await request.form()
         raw_data = {key: str(form[key]) for key in form}
 
-        errors = _validate_form(resource.form_fields, raw_data)
+        if not validate_csrf(request, raw_data.get("csrf_token")):
+            set_flash(request, "error", "Invalid or missing CSRF token.")
+            return RedirectResponse(
+                url=f"{site.prefix}/{resource_name}/{record_id}/edit", status_code=303
+            )
+
+        errors = validate_form(resource.form_fields, raw_data)
         if errors:
             html = site.render(
                 "admin/form.html",
@@ -108,7 +123,7 @@ def build_edit_routes(router: APIRouter, site: AdminSite) -> None:
             )
             return HTMLResponse(html)
 
-        coerced = _coerce_form_data(resource.form_fields, raw_data)
+        coerced = coerce_form_data(resource.form_fields, raw_data)
         try:
             await resource.dao.update(record_id, coerced)
             set_flash(request, "success", "Record updated.")
@@ -116,8 +131,13 @@ def build_edit_routes(router: APIRouter, site: AdminSite) -> None:
                 url=f"{site.prefix}/{resource_name}/{record_id}",
                 status_code=303,
             )
-        except Exception as exc:
-            set_flash(request, "error", f"Error updating record: {exc}")
+        except Exception:
+            logger.exception(
+                "Error updating record '%s' for resource '%s'",
+                record_id,
+                resource_name,
+            )
+            set_flash(request, "error", "An error occurred while updating the record.")
             html = site.render(
                 "admin/form.html",
                 request,

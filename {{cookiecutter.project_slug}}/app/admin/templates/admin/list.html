@@ -43,7 +43,7 @@
 
 <div class="pagination">
     {% if has_prev %}
-    <a href="{{ admin_prefix }}/{{ resource.name }}/?page={{ page - 1 }}{% if search %}&search={{ search }}{% endif %}">
+    <a href="{{ admin_prefix }}/{{ resource.name }}/?page={{ page - 1 }}{% if search %}&search={{ search | urlencode }}{% endif %}">
         &laquo; Previous
     </a>
     {% else %}
@@ -53,7 +53,7 @@
     <span>Page {{ page }} of {{ total_pages }} ({{ total_count }} records)</span>
 
     {% if has_next %}
-    <a href="{{ admin_prefix }}/{{ resource.name }}/?page={{ page + 1 }}{% if search %}&search={{ search }}{% endif %}">
+    <a href="{{ admin_prefix }}/{{ resource.name }}/?page={{ page + 1 }}{% if search %}&search={{ search | urlencode }}{% endif %}">
         Next &raquo;
     </a>
     {% else %}

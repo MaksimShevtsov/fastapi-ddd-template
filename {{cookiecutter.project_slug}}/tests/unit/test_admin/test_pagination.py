@@ -1,20 +1,6 @@
 """Unit tests for pagination math (US2)."""
 
-import math
-
-
-def compute_pagination(page: int, page_size: int, total_count: int) -> dict:
-    """Compute pagination values — mirrors admin list view logic."""
-    total_pages = max(1, math.ceil(total_count / page_size)) if page_size > 0 else 1
-    offset = (page - 1) * page_size
-    has_prev = page > 1
-    has_next = page < total_pages
-    return {
-        "offset": offset,
-        "total_pages": total_pages,
-        "has_prev": has_prev,
-        "has_next": has_next,
-    }
+from app.admin.utils import compute_pagination
 
 
 def test_single_page() -> None:

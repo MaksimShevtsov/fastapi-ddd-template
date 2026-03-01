@@ -1,7 +1,8 @@
-"""Admin authentication: protocols, guards, and flash message helpers."""
+"""Admin authentication: protocols, guards, flash, and CSRF helpers."""
 
 from __future__ import annotations
 
+import secrets
 from typing import Any, Protocol, TypedDict
 
 from fastapi import Request
@@ -40,7 +41,12 @@ async def require_admin(request: Request) -> AdminUser | RedirectResponse:
     if not user_id:
         return RedirectResponse(url=f"{prefix}/login", status_code=303)
 
-    user = await admin_site.auth_provider.get_user(user_id)
+    auth_provider = getattr(admin_site, "auth_provider", None)
+    if auth_provider is None:
+        request.session.clear()
+        return RedirectResponse(url=f"{prefix}/login", status_code=303)
+
+    user = await auth_provider.get_user(user_id)
     if not user or not user.get("is_admin"):
         request.session.clear()
         return RedirectResponse(url=f"{prefix}/login", status_code=303)
@@ -56,3 +62,20 @@ def set_flash(request: Request, type: str, message: str) -> None:
 def get_flash(request: Request) -> dict[str, Any] | None:
     """Pop and return the flash message from session, or None."""
     return request.session.pop("_flash", None)
+
+
+def get_csrf_token(request: Request) -> str:
+    """Return the CSRF token for this session, generating one if needed."""
+    token = request.session.get("_csrf_token")
+    if not token:
+        token = secrets.token_urlsafe(32)
+        request.session["_csrf_token"] = token
+    return token
+
+
+def validate_csrf(request: Request, submitted_token: str | None) -> bool:
+    """Return True if submitted_token matches the session CSRF token."""
+    session_token = request.session.get("_csrf_token")
+    if not session_token or not submitted_token:
+        return False
+    return secrets.compare_digest(session_token, submitted_token)

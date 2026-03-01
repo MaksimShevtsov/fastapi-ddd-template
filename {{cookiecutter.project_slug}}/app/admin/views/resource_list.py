@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import math
 from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Request
@@ -10,6 +9,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from starlette.responses import Response
 
 from app.admin.auth import require_admin
+from app.admin.utils import compute_pagination
 
 if TYPE_CHECKING:
     from app.admin.site import AdminSite
@@ -35,7 +35,11 @@ def build_list_routes(router: APIRouter, site: AdminSite) -> None:
             )
             return HTMLResponse(html, status_code=404)
 
-        page = int(request.query_params.get("page", "1"))
+        page_param = request.query_params.get("page", "1")
+        try:
+            page = int(page_param)
+        except (TypeError, ValueError):
+            page = 1
         if page < 1:
             page = 1
         search = request.query_params.get("search") or None
@@ -43,13 +47,7 @@ def build_list_routes(router: APIRouter, site: AdminSite) -> None:
         offset = (page - 1) * resource.page_size
         items, total_count = await resource.dao.list(offset, resource.page_size, search)
 
-        total_pages = (
-            max(1, math.ceil(total_count / resource.page_size))
-            if resource.page_size > 0
-            else 1
-        )
-        has_prev = page > 1
-        has_next = page < total_pages
+        pagination = compute_pagination(page, resource.page_size, total_count)
 
         html = site.render(
             "admin/list.html",
@@ -58,11 +56,11 @@ def build_list_routes(router: APIRouter, site: AdminSite) -> None:
             resource=resource,
             items=items,
             page=page,
-            total_pages=total_pages,
+            total_pages=pagination["total_pages"],
             total_count=total_count,
             search=search or "",
-            has_prev=has_prev,
-            has_next=has_next,
+            has_prev=pagination["has_prev"],
+            has_next=pagination["has_next"],
             active_nav=resource_name,
         )
         return HTMLResponse(html)
