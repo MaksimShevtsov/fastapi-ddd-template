@@ -1,4 +1,4 @@
-{% extends "admin/base.html" %}
+{% raw %}{% extends "admin/base.html" %}
 
 {% block title %}{{ resource.display_name }} Detail — {{ admin_title }}{% endblock %}
 
@@ -30,3 +30,4 @@
     <a href="{{ admin_prefix }}/{{ resource.name }}/">Back to list</a>
 </div>
 {% endblock %}
+{% endraw %}

@@ -1,4 +1,4 @@
-{% extends "admin/base.html" %}
+{% raw %}{% extends "admin/base.html" %}
 
 {% block title %}
 {% if is_edit %}Edit{% else %}Create{% endif %} {{ resource.display_name }} — {{ admin_title }}
@@ -85,3 +85,4 @@
     </div>
 </form>
 {% endblock %}
+{% endraw %}

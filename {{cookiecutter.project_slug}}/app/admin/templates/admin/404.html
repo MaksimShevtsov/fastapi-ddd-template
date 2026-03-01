@@ -1,4 +1,4 @@
-{% extends "admin/base.html" %}
+{% raw %}{% extends "admin/base.html" %}
 
 {% block title %}Not Found — {{ admin_title }}{% endblock %}
 
@@ -8,3 +8,4 @@
 <p>{{ message | default('The page you requested was not found.') }}</p>
 <a href="{{ admin_prefix }}/">Back to Dashboard</a>
 {% endblock %}
+{% endraw %}
