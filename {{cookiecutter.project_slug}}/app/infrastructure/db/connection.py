@@ -23,5 +23,5 @@ def create_engine(settings: Settings) -> AsyncEngine:
         )
     else:
         config = ConnectionConfig(driver="sqlite", database=settings.db_name)
-    registry = SQLRegistry(directory="app/infrastructure/sql")
+    registry = SQLRegistry(root_dir="app/infrastructure/sql")
     return AsyncEngine.from_config(config, registry)
