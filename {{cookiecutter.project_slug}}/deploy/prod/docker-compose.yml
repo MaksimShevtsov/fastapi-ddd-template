@@ -1,15 +1,14 @@
-{% if cookiecutter.use_docker -%}
 services:
   app:
     build:
-      context: ../../{{cookiecutter.project_slug}}
+      context: ../..
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
     env_file:
-      - .env.stage
+      - .env.prod
     environment:
-      - APP_ENV=stage
+      - APP_ENV=prod
     restart: always
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -27,19 +26,18 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: {{ cookiecutter.project_slug }}_stage
-      POSTGRES_USER: {{ cookiecutter.project_slug }}_stage_user
+      POSTGRES_DB: {{ cookiecutter.project_slug }}
+      POSTGRES_USER: {{ cookiecutter.project_slug }}_prod_user
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     restart: always
     volumes:
-      - pgdata_stage:/var/lib/postgresql/data
+      - pgdata_prod:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U {{ cookiecutter.project_slug }}_stage_user"]
+      test: ["CMD-SHELL", "pg_isready -U {{ cookiecutter.project_slug }}_prod_user"]
       interval: 5s
       timeout: 5s
       retries: 5
 
 volumes:
-  pgdata_stage:
+  pgdata_prod:
   {%- endif %}
-{%- endif %}

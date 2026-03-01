@@ -1,8 +1,7 @@
-{% if cookiecutter.use_docker -%}
 services:
   app:
     build:
-      context: ../../{{cookiecutter.project_slug}}
+      context: ../..
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
@@ -11,7 +10,7 @@ services:
     environment:
       - APP_ENV=dev
     volumes:
-      - ../../{{cookiecutter.project_slug}}/app:/app/app
+      - ../../app:/app/app
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     {% if cookiecutter.db_driver == "postgresql" -%}
     depends_on:
@@ -39,4 +38,3 @@ services:
 volumes:
   pgdata_dev:
   {%- endif %}
-{%- endif %}
