@@ -41,7 +41,7 @@ known-first-party = ["app"]
 
 [build-system]
 requires = ["setuptools>=68.0"]
-build-backend = "setuptools.backends.legacy:build"
+build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
