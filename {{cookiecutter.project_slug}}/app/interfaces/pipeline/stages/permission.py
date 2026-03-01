@@ -11,7 +11,7 @@ class PermissionStage(FlowComponent):
     Replace with actual permission checking logic.
     """
 
-    category = ComponentCategory.PERMISSIONS
+    category = ComponentCategory.PERMISSION
 
     async def resolve(self, ctx: RequestContext) -> None:
         """Check permissions. Override with real logic."""
