@@ -6,8 +6,12 @@ RUN pip install uv
 
 WORKDIR /app
 
-COPY pyproject.toml.bak .
-RUN uv pip install --system -r pyproject.toml.bak
+# Install dependencies first (layer-cached separately from app code)
+COPY pyproject.toml .
+# Stub app package so uv can resolve the project without the full source
+RUN mkdir -p app && touch app/__init__.py && \
+    uv pip install --system . && \
+    rm -rf app
 
 # Stage 2: Runtime
 FROM python:{{ cookiecutter.python_version }}-slim
