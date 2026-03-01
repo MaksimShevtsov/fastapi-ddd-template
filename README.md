@@ -3,7 +3,7 @@
 A [Cookiecutter](https://github.com/cookiecutter/cookiecutter) template that implements **Domain-Driven Design with pure SQL** in Python, using FastAPI and CQRS.
 
 ```
-cookiecutter gh:your-username/fastapi-ddd-template
+cookiecutter gh:MaksimShevtsov/fastapi-ddd-template
 ```
 
 ---
@@ -31,7 +31,7 @@ The template generates a working FastAPI service with JWT authentication, a User
 
 ```bash
 pip install cookiecutter
-cookiecutter gh:your-username/fastapi-ddd-template
+cookiecutter gh:MaksimShevtsov/fastapi-ddd-template
 ```
 
 You'll be prompted for:
@@ -290,7 +290,7 @@ async def handle_get_order(query: GetOrderQuery, engine: AsyncEngine) -> OrderRe
 
 ## Request Pipeline
 
-The template uses [`fastapi-request-pipeline`](https://github.com/your-username/fastapi-request-pipeline) for composable middleware. Instead of global middleware, you compose **flows** from **stages** and attach them per-route.
+The template uses [`fastapi-request-pipeline`](https://github.com/MaksimShevtsov/fastapi-request-pipeline) for composable middleware. Instead of global middleware, you compose **flows** from **stages** and attach them per-route.
 
 ```python
 # Pre-built flows
@@ -528,8 +528,8 @@ pytest          # Run tests
 |---------|---------|
 | Web framework | [FastAPI](https://fastapi.tiangolo.com/) |
 | ASGI server | [Uvicorn](https://www.uvicorn.org/) |
-| Request pipeline | [fastapi-request-pipeline](https://github.com/your-username/fastapi-request-pipeline) |
-| Database | [RowQuery](https://github.com/your-username/row-query) (async, raw SQL) |
+| Request pipeline | [fastapi-request-pipeline](https://github.com/MaksimShevtsov/fastapi-request-pipeline) |
+| Database | [RowQuery](https://github.com/MaksimShevtsov/row-query) (async, raw SQL) |
 | Config | [Pydantic Settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/) |
 | API auth | [PyJWT](https://pyjwt.readthedocs.io/) + [bcrypt](https://github.com/pyca/bcrypt) |
 | Admin panel | [Jinja2](https://jinja.palletsprojects.com/) + [Pico CSS](https://picocss.com/) + Starlette sessions |

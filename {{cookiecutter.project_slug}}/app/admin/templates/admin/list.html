@@ -1,4 +1,4 @@
-{% extends "admin/base.html" %}
+{% raw %}{% extends "admin/base.html" %}
 
 {% block title %}{{ resource.display_name }} — {{ admin_title }}{% endblock %}
 
@@ -64,3 +64,4 @@
 <p>No records found{% if search %} for "{{ search }}"{% endif %}.</p>
 {% endif %}
 {% endblock %}
+{% endraw %}
