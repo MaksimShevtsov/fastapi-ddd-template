@@ -1,10 +1,12 @@
 """Base Entity class for domain entities."""
 
 from collections.abc import Hashable
-from typing import Any, Self, cast
+from typing import Any, Generic, Self, TypeVar, cast
+
+T = TypeVar("T", bound=Hashable)
 
 
-class Entity[T: Hashable]:
+class Entity(Generic[T]):
     """
     Base class for domain entities, defined by a unique identity (`id`).
     Subclassing is optional; any implementation honoring this contract is valid.
