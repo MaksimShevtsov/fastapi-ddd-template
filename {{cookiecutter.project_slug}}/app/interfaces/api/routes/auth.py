@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends
 from fastapi_request_pipeline import RequestContext, flow_dependency
 
 from app.application.bus.command_bus import CommandBus
@@ -25,6 +25,7 @@ from app.interfaces.api.schemas.auth import (
 from app.interfaces.api.schemas.user import UserResponse
 from app.interfaces.dependencies.container import (
     get_command_bus,
+    get_engine,
     get_password_hasher,
     get_query_bus,
     get_token_service,
@@ -36,6 +37,7 @@ if TYPE_CHECKING:
     from app.application.services.token_service import TokenService
     from app.application.unit_of_work import UnitOfWork
     from app.domain.services.password_hasher import PasswordHasher
+    from row_query import AsyncEngine
 
 router = APIRouter(tags=["auth"])
 
@@ -114,14 +116,14 @@ async def logout(
 
 @router.get("/auth/me", response_model=UserResponse)
 async def me(
-    request: Request,
     ctx: RequestContext = Depends(flow_dependency(authenticated_flow)),
     bus: QueryBus = Depends(get_query_bus),
+    engine: AsyncEngine = Depends(get_engine),
 ) -> UserResponse:
     """Get the current authenticated user."""
     user_id = ctx.state["user_id"]
     query = GetUserQuery(user_id=user_id)
-    result = await bus.dispatch(query)
+    result = await bus.dispatch(query, engine=engine)
     return result
 
 
