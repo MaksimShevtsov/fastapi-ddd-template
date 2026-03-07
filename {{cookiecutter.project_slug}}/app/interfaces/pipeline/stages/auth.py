@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
-from fastapi_request_pipeline import ComponentCategory, FlowComponent, RequestContext
+from fastapi_request_pipeline import ComponentCategory, FlowAbort, FlowComponent, RequestContext
 
 from app.application.services.token_service import TokenService
 from app.infrastructure.config import Settings
+
+
+class AuthenticationFailed(FlowAbort):
+    """Raised when authentication fails."""
 
 
 class AuthenticationStage(FlowComponent):
@@ -21,8 +25,7 @@ class AuthenticationStage(FlowComponent):
         """Authenticate the request via JWT Bearer token."""
         auth_header = ctx.request.headers.get("Authorization")
         if not auth_header or not auth_header.startswith("Bearer "):
-            ctx.abort("Missing or invalid Authorization header")
-            return
+            raise AuthenticationFailed("Missing or invalid Authorization header")
 
         token = auth_header[7:]  # Strip "Bearer "
 
@@ -35,12 +38,10 @@ class AuthenticationStage(FlowComponent):
         try:
             payload = token_service.decode_token(token)
         except Exception:
-            ctx.abort("Invalid or expired token")
-            return
+            raise AuthenticationFailed("Invalid or expired token")
 
         if payload.get("type") != "access":
-            ctx.abort("Token is not an access token")
-            return
+            raise AuthenticationFailed("Token is not an access token")
 
         ctx.state["user_id"] = payload["sub"]
         ctx.state["authenticated"] = True

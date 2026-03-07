@@ -307,13 +307,16 @@ async def get_profile(ctx: RequestContext = Depends(flow_dependency(authenticate
 ### Writing Custom Stages
 
 ```python
+class RateLimitExceeded(FlowAbort):
+    """Raised when a client exceeds the rate limit."""
+
 class RateLimitStage(FlowComponent):
     category = ComponentCategory.CUSTOM
 
     async def resolve(self, ctx: RequestContext) -> None:
         client_ip = ctx.request.client.host
         if await is_rate_limited(client_ip):
-            ctx.abort("Rate limit exceeded")
+            raise RateLimitExceeded("Rate limit exceeded")
 
 # Compose into a new flow
 rate_limited_flow = Flow(RateLimitStage(), AuthenticationStage(), LoggingStage())
