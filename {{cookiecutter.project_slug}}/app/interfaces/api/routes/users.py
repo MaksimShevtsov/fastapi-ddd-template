@@ -12,10 +12,12 @@ from app.application.bus.query_bus import QueryBus
 from app.application.commands.create_user import CreateUserCommand
 from app.application.queries.get_user import GetUserQuery
 from app.interfaces.api.schemas.user import CreateUserRequest, UserResponse
-from app.interfaces.dependencies.container import get_command_bus, get_query_bus, get_unit_of_work
+from app.interfaces.dependencies.container import get_command_bus, get_engine, get_query_bus, get_unit_of_work
 from app.interfaces.pipeline.flows import authenticated_flow
 
 if TYPE_CHECKING:
+    from row_query import AsyncEngine
+
     from app.application.unit_of_work import UnitOfWork
 
 router = APIRouter(tags=["users"])
@@ -39,8 +41,9 @@ async def get_user(
     user_id: str,
     ctx: RequestContext = Depends(flow_dependency(authenticated_flow)),
     bus: QueryBus = Depends(get_query_bus),
+    engine: AsyncEngine = Depends(get_engine),
 ) -> UserResponse:
     """Get a user by ID."""
     query = GetUserQuery(user_id=user_id)
-    result = await bus.dispatch(query)
+    result = await bus.dispatch(query, engine=engine)
     return result
