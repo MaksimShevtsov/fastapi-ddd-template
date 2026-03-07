@@ -6,7 +6,10 @@ import uuid
 from datetime import datetime
 from typing import Any
 
+from row_query.core.exceptions import ParameterBindingError
+
 from app.domain.entities.user import UserEntity
+from app.domain.errors import ConflictError
 from app.domain.interfaces.user_repository import UserRepositoryInterface
 from app.domain.value_objects.user_id import UserId
 from app.infrastructure.errors import DatabaseError, DataMappingError
@@ -52,6 +55,13 @@ class UserRepository(UserRepositoryInterface):
                     "updated_at": user.updated_at.isoformat() if user.updated_at else None,
                 },
             )
+        except ParameterBindingError as exc:
+            if "unique" in str(exc).lower():
+                raise ConflictError(
+                    code="USER_ALREADY_EXISTS",
+                    message=f"A user with email '{user.email}' already exists",
+                ) from exc
+            raise DatabaseError(message="Failed to save user", cause=exc) from exc
         except Exception as exc:
             raise DatabaseError(message="Failed to save user", cause=exc) from exc
 
